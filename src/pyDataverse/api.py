@@ -1639,7 +1639,7 @@ class NativeApi(Api):
             # CHECK: Its not really clear, if the version query can also be done via ID.
         return self.get_request(url, auth=auth)
 
-    def upload_datafile(self, identifier, filename, json_str=None, is_pid=True):
+    def upload_datafile(self, identifier, filename, json_str=None, is_pid=True, mime_type=None):
         """Add file to a dataset.
 
         Add a file to an existing Dataset. Description and tags are optional:
@@ -1666,6 +1666,8 @@ class NativeApi(Api):
             Metadata as JSON string.
         is_pid : bool
             ``True`` to use persistent identifier. ``False``, if not.
+        mime_type : str
+            The MIME type of the file.
 
         Returns
         -------
@@ -1680,7 +1682,11 @@ class NativeApi(Api):
         else:
             url += "/datasets/{0}/add".format(identifier)
 
-        files = {"file": open(filename, "rb")}
+        if mime_type:
+            files = {"file": (filename.rsplit('/', 1)[-1], open(filename, "rb"), mime_type)}
+        else:
+            files = {"file": open(filename, "rb")}
+        
         return self.post_request(
             url, data={"jsonData": json_str}, files=files, auth=True
         )
